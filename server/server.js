@@ -8,6 +8,9 @@ const { Server } = require('socket.io');
 const fs = require('fs');
 const app = express();
 const PORT =  5000;
+const axios = require('axios');
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Disable SSL verification for development
 
 // Load SSL/TLS certificates using environment variables
 const privateKey = fs.readFileSync(process.env.PRIVATE_KEY_PATH || path.join(__dirname, 'server.key'), 'utf8');
@@ -16,6 +19,8 @@ const credentials = { key: privateKey, cert: certificate };
 
 // Middleware
 app.use(cors());
+
+
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -72,15 +77,16 @@ const resetGameState = () => {
 
 // Endpoint to handle user data and photo upload
 app.post('/api/upload', upload.single('photo'), (req, res) => {
+  
   try {
     const { name } = req.body;
     if (!name || !req.file) {
-      return res.status(400).json({ error: 'Name and photo are required.' });
+      return res.status(400).json({ error: 'بارك الله فيك , مطلوب الاسم والصورة ' });
     }
 
     const existingPlayer = players.find((p) => p.name === name);
     if (existingPlayer) {
-      return res.status(400).json({ error: 'A player with this name already exists.' });
+      return res.status(400).json({ error: 'الاسم موجود' });
     }
 
     const newPlayer = {
@@ -95,7 +101,7 @@ app.post('/api/upload', upload.single('photo'), (req, res) => {
     broadcastGameState(io);
     res.json({ success: true, player: newPlayer });
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error('مشكلة في تحميل الصورة.', error);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
@@ -117,7 +123,7 @@ app.post('/api/ready', (req, res) => {
     });
 
     if (readyPlayers.size === players.length && players.length >= 3) {
-      const words = ['Lion', 'Tiger', 'Elephant', 'Giraffe', 'Zebra'];
+      const words = ['اسد', 'نمر', 'فيل', 'زرافة', 'حمار وحشي'];
       currentWord = words[Math.floor(Math.random() * words.length)];
       impostorId = players[Math.floor(Math.random() * players.length)].id;
 
