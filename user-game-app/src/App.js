@@ -5,8 +5,9 @@ import { motion } from 'framer-motion';
 import io from 'socket.io-client';
 
 // Dynamically set the server URL
-const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'https://188.161.20.201:5000';
+const SERVER_URL = 'https://188.161.20.201:5000';
 const socket = io(SERVER_URL);
+
 
 const App = () => {
   const [name, setName] = useState('');
@@ -74,7 +75,9 @@ const App = () => {
     try {
       const response = await axios.post(`${SERVER_URL}/api/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      });
+        timeout: 10000, // 10 seconds
+      })
+      ;
       setUser(response.data.player);
       localStorage.setItem('name', name);
     } catch (error) {
@@ -117,7 +120,7 @@ const App = () => {
   if (!user) {
     return (
       <RegisterContainer>
-        <h1>Register for برا السالفة</h1>
+        <h1>برا السالفة</h1>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -150,21 +153,21 @@ const App = () => {
     <MainContainer>
       {/* Scoreboard */}
       <Scoreboard>
-        <h3>Scoreboard</h3>
+        <h3>لائحة النقاط</h3>
         {players.map((player) => (
           <p key={player.id}>
-            {player.name}: {player.score} points
+            {player.name}: {player.score} نقاط
           </p>
         ))}
       </Scoreboard>
 
       <Header>
-        <h1>Welcome, {user.name}!</h1>
+        <h1>يا مرحب, {user.name}!</h1>
         {stage === 'waiting' && (
           <>
-            <p>Waiting for players to join...</p>
+            <p>...ننتظر بالنشامة</p>
             <button onClick={markReady} disabled={readyPlayers.includes(user.id)}>
-              {readyPlayers.includes(user.id) ? 'Ready!' : 'Mark as Ready'}
+              {readyPlayers.includes(user.id) ? '!تم' : 'جاهز'}
             </button>
           </>
         )}
@@ -203,7 +206,7 @@ const App = () => {
 
       {stage === 'asking' && (
         <AskingSection>
-          <h2>Asking Stage</h2>
+          <h2>فقرة الاسئلة</h2>
           {currentQuestioner && currentQuestioner.id === user.id ? (
             <>
               <p>You are asking {players[(currentQuestionIndex + 1) % players.length]?.name}</p>
@@ -222,7 +225,7 @@ const App = () => {
 
       {stage === 'voting' && (
         <VoteSection>
-          <h2>Vote for Impostor</h2>
+          <h2>فقرة التصويت</h2>
           {players
             .filter((player) => player.id !== user.id)
             .map((player) => (
@@ -230,21 +233,21 @@ const App = () => {
                 Vote {player.name}
               </button>
             ))}
-          {hasVoted && <p>You have voted.</p>}
+          {hasVoted && <p>.إنت صوتت</p>}
         </VoteSection>
       )}
 
       {stage === 'results' && (
         <ResultsSection>
-          <h2>Results</h2>
+          <h2>النتيجة</h2>
           <p>The impostor was: {players.find((p) => p.id === impostorId)?.name}</p>
-          <button onClick={markReady}>Next Round</button>
+          <button onClick={markReady}>الجولة الي بعدها</button>
         </ResultsSection>
       )}
 
       {(stage === 'asking' || stage === 'voting') && user.word && (
         <StoryPrompt>
-          <p>{user.word === 'Impostor' ? 'You are the impostor!' : `Your word is: ${user.word}`}</p>
+          <p>{user.word === 'Impostor' ? '!أنت برا السالفة' : `الكلمة هي: ${user.word}`}</p>
         </StoryPrompt>
       )}
     </MainContainer>
